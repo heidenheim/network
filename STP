@@ -1,0 +1,44 @@
+ STP (Spanning-Tree Protocols) 生成树协议，通过阻断冗余链路来消除桥接网络中可能存在的路径环路的二层链路管理协议
+
+二层环路最大危害就是会产生广播风暴，以太网是一个支持广播的网络，在没有环路的环境中，广播包在网络中以泛洪的形式被送达到网络中的每一个角落，以保证每个设备都能接收到它。在宽带允许的情况下，每个网桥在接收到广播报文以后，都会向除接收端口以外的其他所有端口转发这个广播包，一旦网络中有环路，这种简单的广播机制就会引发灾难性的后果，可以耗尽系统资源，甚至把广播风暴蔓延开去其他可见的危害摆阔数据帧的重复拷贝以及MAC地址表不稳定。
+
+
+
+协议            标准        资源需求        收敛(Convergence)        树的数量
+
+STP             802.1D        Low                 SLow                  1    
+
+PVST+           cisoco        High                Slow             每个VLAN有1个
+
+RSTP            802.1w        Medium              Fast                  1
+
+Rapid PVST+     cisco         very high           Fast              每个VLAN有1个
+
+MST             802.1s          high              Fast                 多种
+
+
+
+生成树协议的基本原理
+
+在网桥之间传递特殊消息（配置信息 configuration BPDU 和拓扑变化信息 Topology change notification (TCN) BPDU），包含足够的信息做以下工作：
+
+    1. 从每个广播域的所有网桥中，选出一个作为根网桥（root bridge）
+
+    2. 计算本网桥到根网桥的最短路径（cost）
+
+    3. 对每个LAN，选出离根桥最近的那个网桥作为指定网桥（designate bridge），负责所在LAN上的数据转发，选择出负责在该LAN上转发数据的指定端口（designate port）
+
+    4. 每个网桥选择一个根端口（root port），该端口给出的路径是此网桥到根网桥最佳路径，负责接收最优BPDU
+
+
+
+BPDU
+
+    bytes             field
+
+        2            protocol ID
+
+        1              Version
+
+    
+
