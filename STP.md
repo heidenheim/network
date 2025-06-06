@@ -12,7 +12,7 @@ Spanning Tree Protocols STP 通过将每个交换机端口置于*转发状态*�
 处于*阻塞状态*的接口除了STP消息外不会处理任何帧。阻塞的接口*不转发*用户帧，*不学习*接收到的帧的MAC地址，也*不处理*接收到的用户帧。
 
 STP是一种公有协议，除了STP还有其他的协议用于防止环路</br>
-|STP|         |802.1D| |low|       |slow| |one|
-|PVST+|       |cisco|  |high|      |slow| |one of every VLAN|
-|RSTP|        |802.1W| |medium|    |fast| |one|
-|Rapid PVST+| |cisco|  |very high| |fast| |multi instance|
+|STP         |802.1D |low|       |slow |one|
+|PVST+       |cisco  |high|      |slow |one of every VLAN|
+|RSTP        |802.1W |medium|    |fast |one|
+|Rapid PVST+ |cisco  |very high| |fast |multi instance|
