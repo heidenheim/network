@@ -1,4 +1,4 @@
-**BGP（Border Gatway Protocol）**是一种外部网关协议（External Gatway Protocol），由此可以知道网关协议可以分为外部网关协议（EGP）和内部网关协议（Internal Gatway Protocol），被人熟知的内部网关协议（IGP）有OSPF，EIGRP。
+**BGP（Border Gatway Protocol**是一种外部网关协议（External Gatway Protocol），由此可以知道网关协议可以分为外部网关协议（EGP）和内部网关协议（Internal Gatway Protocol），被人熟知的内部网关协议（IGP）有OSPF，EIGRP。
 
 为什么要有EGP
 OSPF，EIGRP等IGP路由协议在组织机构网络内部广泛应用，随着网络规模的扩大网络中路由数量的增长，IGB没办法管理大规模的网络，所以诞生了Autonomous System 自治系统。
@@ -42,3 +42,56 @@ AS指的是在同一个组织管理下，使用统一路由策略的设备集合
 - BGP 选择路径 = 看哪条路径的 AS-PATH 更短，或者哪条路径的 Local Preference 更高。
 
 ![](image\112314.png)
+
+AS之间需要直接链路，或通过VPN协议构造逻辑直连（GRE Tunnel）进行邻居建立。
+AS之间可能是不同的机构、公司，相互间无法完全信任，使用IGP可能存在暴露AS内部的网络信息。
+整个网络扩大，路由器数量庞大，路由表规模太大，路由收敛变慢，设备性能销号太大。
+为此在AS之间使用BGP进行路由传递。
+
+IANA（Internet Assigned Number Authority 因特网地址分配组织）IAB（Internet Architecture Board 因特网体系委员会）的下设组织。IANA授权NIC（Network information Center 网络信息中心）和其他组织负责IP地址和域名分配，同时IANA负责维护TCP/IP协议族所采用的协议标识符数据库，包括AS自治系统号。
+
+长度16 bit的AS表示为 1-65535，其中64512-65535为私有AS号，0不可使用
+长度 32 bit的AS表示为 1-4294967294，其中 4200000000-4294967294为私有AS，0不可用。
+AS号 1 – 65535 = 2^16，0不能用
+64512 – 65535为私网AS号，一共1024个
+一般用不到32bit的AS号，用16bit的AS
+
+## BGP发展
+
+1980年代出现EGP，1989年出现BGP-1，现在使用的是BGP4+支持多种地址族（BGP4只能支持IPv4，但是BGP4+可以支持IPv6，还有VPNv4，VPNv6，L2VPN）
+
+BGP是一种实现AS之间的路由可达，并选择最佳路由（优选）的矢量路由协议。
+
+特点
+- BGP使用TCP作为其传输层协议（port 179），使用触发式路由更新，而不是周期性路由更新。
+- 路由器之间会话基于TCP连接而建立
+- BGP能够承载大批量的路由协议信息，能够支撑大规模网络。
+- BGP提供了丰富的路由策略，能够灵活的进行路由选路，并能直到对等体按策略发布路由。
+- BGP能够支撑MPLS/VPN的应用，传递客户VPN路由。
+- BGP提供了路由聚合和路由衰减功能用于防止路由震荡，通过这两项功能有效地提高了网络稳定性。
+	
+运行BGP的路由器称为**BGP speaker**，或**BGP路由器**
+两个建立BGP会话对策路由器互为等体（Peer），BGP对等体之间交换BGP路由表。
+BGP路由器只发送增量的BGP路由更新，或进行触发式更新（不会周期性更新）。
+BGP能够承载大批量的路由前缀，可在大规模网络中应用。
+
+## BGP安全性
+常见BGP攻击主要有两种
+- 建立非法BGP邻居关系，通过非法路条目，干扰正常路由表
+- 发送大量非法BGP报文，路由收到上送CPU，导致CPU利用率升高
+
+## BGP认证
+BGP使用认证和GTSM（Generalized TTL Security Mechanism 通过TTL 安全保护机制）两个方法保证BGP对等体间的交互安全。
+
+BGP认证分为MD5认证和Keychain认证，对BGP对等体关系进行认证可以预防非法BGP邻居建立。
+![](image\144319.png)
+
+其中Keychain是华为的技术。
+BGP认证需要硬重置才可以使密码生效，如果BGP会话先行建立再去设置密码就没有意义了。
+
+## BGP的GTSM
+BGP的GTSM功能检测IP报文头部中的TTL（Time-to-live）值是否存在一个预先设置好的特定范围内，并对不符合TTL值范围的报文进行丢弃，这样就避免了网络攻击者模拟“合法”BGP报文攻击设备。
+*要求 BGP 邻居之间发送的 IP 包 TTL 值必须为 255，接收方只接受 TTL 值为 255 的数据包。因为同一个子网内的直接邻居在发送数据包时 TTL 是 255，如果是远端伪造者伪装成邻居发起攻击，TTL 必然会在经过路由器转发时减少，从而低于 255，被 GTSM 拦截。*
+```router bgp 65001``` </br> ```neighbor 192.0.2.1 ttl-security hops 1```
+'ttl-security hops 1' 表示期望邻居距离是 1 跳（即直连），此时系统自动将 TTL 设为 255，接收端也只接受 TTL 为 255 的包。
+如果设置 hops 2，则接受 TTL 值为 254 或 255。
