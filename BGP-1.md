@@ -1,6 +1,6 @@
 BGP（Border Gatway Protocol）是一种外部网关协议（External Gatway Protocol），由此可以知道网关协议可以分为外部网关协议（EGP）和内部网关协议（Internal Gatway Protocol），熟知的内部网关协议（IGP）有OSPF，EIGRP。
 
-##为什么要有BGP
+## 为什么要有BGP
 
 OSPF，EIGRP等IGP路由协议在组织机构网络内部广泛应用，随着网络规模的扩大网络中路由数量的增长，IGB没办法管理大规模的网络，所以诞生了Autonomous System(AS)自治系统。
 
