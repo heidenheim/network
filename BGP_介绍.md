@@ -97,4 +97,146 @@ BGP的GTSM功能检测IP报文头部中的TTL（Time-to-live）值是否存在�
 
 'ttl-security hops 1' 表示期望邻居距离是 1 跳（即直连），此时系统自动将 TTL 设为 255，接收端也只接受 TTL 为 255 的包。
 
-如果设置 hops 2，则接受 TTL 值为 254 或 255。
+如果设置 hops 2，则接受 TTL 值为254或255都能被接受。
+
+ttl-security hops N 意味着允许 TTL 值在 [256-N, 255] 范围内的数据包，增强了对 BGP 邻居连接的 TTL 安全性验证
+
+## 跨设备建立邻居
+BGP除了可以像其他网络协议一样能够和直连的设备建立邻居意外，还可以跨设备指定邻居，当然必要前提是要有能到达该设备的路由。
+![](image/12317.png)
+
+首先在路由器上写上静态路由到达1.1.1.1 和3.3.3.3
+```R1(config)#ip route 3.3.3.3 255.255.255.255 12.1.1.2
+R2(config)#ip route 1.1.1.1 255.255.255.255 12.1.1.1
+R2(config)#ip route 3.3.3.3 255.255.255.255 23.1.1.3
+R3(config)#ip route 1.1.1.1 255.255.255.255 23.1.1.2
+```
+
+配置R1:
+```R1(config)#router bgp 100
+R1(config-router)#bgp router-id 1.1.1.1
+R1(config-router)#bgp log-neighbor-changes // 显示邻居关系的日志信息, 也不需要, 有这条命了当邻居关系 up huo down 都会在日志里提示.
+R1(config-router)#neighbor 3.3.3.3 remote-as 200
+R1(config-router)#neighbor 3.3.3.3 ebgp-multihop 2
+R1(config-router)#neighbor 3.3.3.3 update-source loopback 0
+```
+
+配置R3:
+```R3(config)#router bgp 200
+R3(config-router)#bgp router-id 3.3.3.3
+R3(config-router)#bgp log-neighbor-changes
+R3(config-router)#neighbor 1.1.1.1 remote-as 100
+R3(config-router)#neighbor 1.1.1.1 ebgp-multihop 2
+R3(config-router)#neighbor 1.1.1.1 update-source loopback 0
+
+```
+
+```R1#show ip bgp summary
+BGP router identifier 1.1.1.1, local AS number 100
+BGP table version is 1, main routing table version 1
+
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+3.3.3.3         4          200       4       4        1    0    0 00:00:37        0
+```
+BGP跨设备邻居建立成功 neighbor x.x.x.x ebgp-multihop x //意义为允许x跳之内的EBGP建立邻居连接. 默认情况下EBGP的邻居必须是直连, BGP对TTL要求严格.
+
+
+![](image/16854.png)
+```R1(config-if)#router ospf 110
+R1(config-router)#router-id 1.1.1.1
+R1(config-router)#network 12.1.1.1 255.255.255.255 area 0
+R1(config-router)#network 1.1.1.1 255.255.255.255 area 0
+```
+
+```R2(config)#router ospf 110
+R2(config-router)#network 12.1.1.2 255.255.255.255 area 0
+
+R2(config)#router bgp 10000
+R2(config-router)#bgp router-id 2.2.2.2
+R2(config-router)#neighbor 23.1.1.3 remote-as 20000
+```
+
+```R3(config-if)#router bgp 20000
+R3(config-router)#bgp router-id 3.3.3.3
+R3(config-router)#neighbor 23.1.1.2 remote-as 10000
+*Jun  9 10:56:29.357: %BGP-5-ADJCHANGE: neighbor 23.1.1.2 Up //邻居建立成功
+
+```
+使用命令 show ip bpg summary, 可以看到 State/PfxRcd 的值为0 说明现在BGP并没有传递任何路由
+使用命令 show ip bgp 也为空
+
+```R3(config)#router eigrp 90
+R3(config-router)#eigrp router-id 3.3.3.3
+R3(config-router)#network 34.1.1.3 0.0.0.0
+```
+
+```R4(config)#router eigrp 90
+R4(config-router)#eigrp router-id 4.4.4.4
+R4(config-router)#network 34.1.1.4 0.0.0.0
+R4(config-router)#network 4.4.4.4 0.0.0.0
+```
+现在环境搭建完毕. 现在来**在BGP宣告路由**.
+
+```R2(config)#router bgp 10000
+R2(config-router)#network 1.1.1.1 mask 255.255.255.255
+```
+```R3(config)#router bgp 20000
+R3(config-router)#network 4.4.4.4 mask 255.255.255.255
+```
+
+这个时候 show ip bgp 就能看到我们宣告进去的路由了
+R2#show ip bgp
+BGP table version is 3, local router ID is 2.2.2.2
+Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+              x best-external, a additional-path, c RIB-compressed,
+              t secondary path,
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+     Network          Next Hop            Metric LocPrf Weight Path
+ *>   1.1.1.1/32       12.1.1.1                11         32768 i
+ *>   4.4.4.4/32       23.1.1.3            409600             0 20000 i
+
+‘*’ 表示可用路由
+‘>’ 表示最优路由
+
+在show ip bgp summary 中
+R3#show ip bgp summary
+BGP router identifier 3.3.3.3, local AS number 20000
+BGP table version is 3, main routing table version 3
+2 network entries using 288 bytes of memory
+2 path entries using 168 bytes of memory
+2/2 BGP path/bestpath attribute entries using 320 bytes of memory
+1 BGP AS-PATH entries using 24 bytes of memory
+0 BGP route-map cache entries using 0 bytes of memory
+0 BGP filter-list cache entries using 0 bytes of memory
+BGP using 800 total bytes of memory
+BGP activity 2/0 prefixes, 2/0 paths, scan interval 60 secs
+
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+23.1.1.2        4        10000      18      18        3    0    0 00:12:32        1
+
+State/PfxRcd 已经有路由了
+
+虽然现在到1.1.1.1和4.4.4.4都已经有路由了,但是目前R1和R4还是不能互相访问的,因为BGP的路由并没有重分布进 OSPF 和 EIGRP, 因为现实环境中BGP的路由也不可能重分布进去的, 因为截止到2025年BGP路由已经有110万条了.
+
+所以作为解决办法就是把R2和R3当作R1和R4的出口路由器, R1和R4使用默认路由来访问外部网络.
+```R2(config-router)#redistribute ?
+  application     Application
+  bgp             Border Gateway Protocol (BGP)
+  connected       Connected
+  eigrp           Enhanced Interior Gateway Routing Protocol (EIGRP)
+  isis            ISO IS-IS
+  iso-igrp        IGRP for OSI networks
+  lisp            Locator ID Separation Protocol (LISP)
+  maximum-prefix  Maximum number of prefixes redistributed to protocol
+  mobile          Mobile routes
+  odr             On Demand stub Routes
+  ospf            Open Shortest Path First (OSPF)
+  ospfv3          OSPFv3
+  rip             Routing Information Protocol (RIP)
+  static          Static routes
+  vrf             Specify a source VRF
+```
+当然在redistribute 中有bgp的选项,但是正常情况下是不会这么做的.
