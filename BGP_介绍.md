@@ -93,7 +93,13 @@ BGP认证需要硬重置才可以使密码生效，如果BGP会话先行建立�
 BGP的GTSM功能检测IP报文头部中的TTL（Time-to-live）值是否存在一个预先设置好的特定范围内，并对不符合TTL值范围的报文进行丢弃，这样就避免了网络攻击者模拟“合法”BGP报文攻击设备。
 *要求 BGP 邻居之间发送的 IP 包 TTL 值必须为 255，接收方只接受 TTL 值为 255 的数据包。因为同一个子网内的直接邻居在发送数据包时 TTL 是 255，如果是远端伪造者伪装成邻居发起攻击，TTL 必然会在经过路由器转发时减少，从而低于 255，被 GTSM 拦截。*
 
-```router bgp 65001``` </br> ```neighbor 192.0.2.1 ttl-security hops 1```
+```
+router bgp 65001
+``` 
+
+```
+neighbor 192.0.2.1 ttl-security hops 1
+```
 
 'ttl-security hops 1' 表示期望邻居距离是 1 跳（即直连），此时系统自动将 TTL 设为 255，接收端也只接受 TTL 为 255 的包。
 
@@ -106,14 +112,16 @@ BGP除了可以像其他网络协议一样能够和直连的设备建立邻居�
 ![](image/12317.png)
 
 首先在路由器上写上静态路由到达1.1.1.1 和3.3.3.3
-```R1(config)#ip route 3.3.3.3 255.255.255.255 12.1.1.2
+```
+R1(config)#ip route 3.3.3.3 255.255.255.255 12.1.1.2
 R2(config)#ip route 1.1.1.1 255.255.255.255 12.1.1.1
 R2(config)#ip route 3.3.3.3 255.255.255.255 23.1.1.3
 R3(config)#ip route 1.1.1.1 255.255.255.255 23.1.1.2
 ```
 
 配置R1:
-```R1(config)#router bgp 100
+```
+R1(config)#router bgp 100
 R1(config-router)#bgp router-id 1.1.1.1
 R1(config-router)#bgp log-neighbor-changes // 显示邻居关系的日志信息, 也不需要, 有这条命了当邻居关系 up huo down 都会在日志里提示.
 R1(config-router)#neighbor 3.3.3.3 remote-as 200
@@ -122,7 +130,8 @@ R1(config-router)#neighbor 3.3.3.3 update-source loopback 0
 ```
 
 配置R3:
-```R3(config)#router bgp 200
+```
+R3(config)#router bgp 200
 R3(config-router)#bgp router-id 3.3.3.3
 R3(config-router)#bgp log-neighbor-changes
 R3(config-router)#neighbor 1.1.1.1 remote-as 100
@@ -131,7 +140,8 @@ R3(config-router)#neighbor 1.1.1.1 update-source loopback 0
 
 ```
 
-```R1#show ip bgp summary
+```
+R1#show ip bgp summary
 BGP router identifier 1.1.1.1, local AS number 100
 BGP table version is 1, main routing table version 1
 
@@ -142,13 +152,15 @@ BGP跨设备邻居建立成功 neighbor x.x.x.x ebgp-multihop x //意义为允�
 
 
 ![](image/16854.png)
-```R1(config-if)#router ospf 110
+```
+R1(config-if)#router ospf 110
 R1(config-router)#router-id 1.1.1.1
 R1(config-router)#network 12.1.1.1 255.255.255.255 area 0
 R1(config-router)#network 1.1.1.1 255.255.255.255 area 0
 ```
 
-```R2(config)#router ospf 110
+```
+R2(config)#router ospf 110
 R2(config-router)#network 12.1.1.2 255.255.255.255 area 0
 
 R2(config)#router bgp 10000
@@ -156,7 +168,8 @@ R2(config-router)#bgp router-id 2.2.2.2
 R2(config-router)#neighbor 23.1.1.3 remote-as 20000
 ```
 
-```R3(config-if)#router bgp 20000
+```
+R3(config-if)#router bgp 20000
 R3(config-router)#bgp router-id 3.3.3.3
 R3(config-router)#neighbor 23.1.1.2 remote-as 10000
 *Jun  9 10:56:29.357: %BGP-5-ADJCHANGE: neighbor 23.1.1.2 Up //邻居建立成功
@@ -170,17 +183,21 @@ R3(config-router)#eigrp router-id 3.3.3.3
 R3(config-router)#network 34.1.1.3 0.0.0.0
 ```
 
-```R4(config)#router eigrp 90
+```
+R4(config)#router eigrp 90
 R4(config-router)#eigrp router-id 4.4.4.4
 R4(config-router)#network 34.1.1.4 0.0.0.0
 R4(config-router)#network 4.4.4.4 0.0.0.0
 ```
 现在环境搭建完毕. 现在来**在BGP宣告路由**.
 
-```R2(config)#router bgp 10000
+```
+R2(config)#router bgp 10000
 R2(config-router)#network 1.1.1.1 mask 255.255.255.255
 ```
-```R3(config)#router bgp 20000
+
+```
+R3(config)#router bgp 20000
 R3(config-router)#network 4.4.4.4 mask 255.255.255.255
 ```
 
@@ -247,10 +264,12 @@ R2(config-router)#redistribute ?
 当然在redistribute 中有bgp的选项,但是正常情况下是不会这么做的.
 
 可以写默认路由也可以写明细路由
-```R1(config)#ip route 4.4.4.4 255.255.255.255 12.1.1.2
+```
+R1(config)#ip route 4.4.4.4 255.255.255.255 12.1.1.2
 ```
 
-```R4(config)#ip route 1.1.1.1 255.255.255.255 34.1.1.3
+```
+R4(config)#ip route 1.1.1.1 255.255.255.255 34.1.1.3
 R4(config)#do ping 1.1.1.1 source lo0
 Type escape sequence to abort.
 Sending 5, 100-byte ICMP Echos to 1.1.1.1, timeout is 2 seconds:
