@@ -185,6 +185,7 @@ R3(config-router)#network 4.4.4.4 mask 255.255.255.255
 ```
 
 这个时候 show ip bgp 就能看到我们宣告进去的路由了
+```
 R2#show ip bgp
 BGP table version is 3, local router ID is 2.2.2.2
 Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
@@ -197,6 +198,7 @@ RPKI validation codes: V valid, I invalid, N Not found
      Network          Next Hop            Metric LocPrf Weight Path
  *>   1.1.1.1/32       12.1.1.1                11         32768 i
  *>   4.4.4.4/32       23.1.1.3            409600             0 20000 i
+```
 
 ‘*’ 表示可用路由
 ‘>’ 表示最优路由
@@ -222,7 +224,8 @@ State/PfxRcd 已经有路由了
 虽然现在到1.1.1.1和4.4.4.4都已经有路由了,但是目前R1和R4还是不能互相访问的,因为BGP的路由并没有重分布进 OSPF 和 EIGRP, 因为现实环境中BGP的路由也不可能重分布进去的, 因为截止到2025年BGP路由已经有110万条了.
 
 所以作为解决办法就是把R2和R3当作R1和R4的出口路由器, R1和R4使用默认路由来访问外部网络.
-```R2(config-router)#redistribute ?
+```
+R2(config-router)#redistribute ?
   application     Application
   bgp             Border Gateway Protocol (BGP)
   connected       Connected
