@@ -204,6 +204,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 ‘>’ 表示最优路由
 
 在show ip bgp summary 中
+```
 R3#show ip bgp summary
 BGP router identifier 3.3.3.3, local AS number 20000
 BGP table version is 3, main routing table version 3
@@ -218,6 +219,7 @@ BGP activity 2/0 prefixes, 2/0 paths, scan interval 60 secs
 
 Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 23.1.1.2        4        10000      18      18        3    0    0 00:12:32        1
+```
 
 State/PfxRcd 已经有路由了
 
