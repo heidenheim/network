@@ -245,3 +245,16 @@ R2(config-router)#redistribute ?
   vrf             Specify a source VRF
 ```
 当然在redistribute 中有bgp的选项,但是正常情况下是不会这么做的.
+
+可以写默认路由也可以写明细路由
+```R1(config)#ip route 4.4.4.4 255.255.255.255 12.1.1.2
+```
+
+```R4(config)#ip route 1.1.1.1 255.255.255.255 34.1.1.3
+R4(config)#do ping 1.1.1.1 source lo0
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 1.1.1.1, timeout is 2 seconds:
+Packet sent with a source address of 4.4.4.4
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/2 ms
+```
