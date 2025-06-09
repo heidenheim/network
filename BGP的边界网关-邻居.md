@@ -8,7 +8,8 @@ BGP通常被称为路径矢量路由协议(Path-Vector Routing Protocol)
 - 下一跳
 - NLRI (Next Layer Reachable Information) 简单来说就是路由,类似于OSPF的LSA
 ![](image/432718.png)
-```R2#show ip bgp summary
+```
+R2#show ip bgp summary
 BGP router identifier 2.2.2.2, local AS number 200
 BGP table version is 1, main routing table version 1
 
@@ -20,6 +21,7 @@ Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State
 ```R2(config)#router bgp 200
 R2(config-router)#network 1.1.1.1 mask 255.255.255.255
 ```
+
 ```
 R3(config)#router bgp 300
 R3(config-router)#network 4.4.4.4 mask 255.255.255.255
@@ -30,7 +32,9 @@ R1(config)#ip route 0.0.0.0 0.0.0.0 12.1.1.2
 
 R4(config)#ip route 0.0.0.0 0.0.0.0 34.1.1.3
 ```
-```R1#ping 4.4.4.4 source lo0
+
+```
+R1#ping 4.4.4.4 source lo0
 Type escape sequence to abort.
 Sending 5, 100-byte ICMP Echos to 4.4.4.4, timeout is 2 seconds:
 Packet sent with a source address of 1.1.1.1
