@@ -69,3 +69,19 @@ R1(config-route-map)#set ip next-hop 3.3.3.3
 R1(config)#router bgp 100
 R1(config-router)#neighbor 2.2.2.2 route-map RR out
 ```
+
+在BGP中, router refresh报文是一种用于动态更新BGP路由表的机制, 而无需中断现有的BGP会话, 它允许BGP对等体请求对方重新发送符合某些策略的路由信息. router refresh报文可以在**入方向(inbound)**和**出方向(outbound)**中使用
+
+1. 入方向报文
+    - 重新应用入站路由策略, 当一个BGP对等体发送入方向的router refresh 报文时, 它是请求对等体重新发送路由更新, 以便在本地重新应用入站的路由策略(前缀列表, 路由映射, 社区过滤器等)
+    - 更新接收到的路由信息, 入方向的router refresh报文确保对等体重新发送符合当前策略的路由信息. 这在管理大型网络时非常有用, 因为可以即时更新路由而不影响网络稳定性.
+2. 出方向报文
+    - 重新应用出战路由策略, 出方向的router refresh报文用于请求对等体重新评估并发送符合当前出战路由策略的路由信息. 假设对等体改变了出站的策略(修改了发送的BGP属性, 如AS路径或下一跳), 通过发送出方向的router refresh报文, 可以要求对等体重新发送符合这些新策略的路由信息
+    - 保证对等体接收最新的路由策略更新, 出方向的router refresh报文确保所有的对等体接收到的路由信息都符合当前的出站策略. 这在网络拓扑或策略发生变化时尤为重要, 因为可以即使传播最新的路由决策.
+
+    
+硬重置
+clear ip bgp ['neighbor'] 会中断BGP会话
+
+软重置
+clear ip bgp [neighbor] in / out
