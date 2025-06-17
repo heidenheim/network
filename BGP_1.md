@@ -42,7 +42,7 @@ OSPF、IS-IS 依赖 SPF/Dijkstra 算法来计算最短路径。
 BGP 不计算最短路径，而是使用策略（Path Selection）选择最佳路径：
 例如基于 AS-PATH、Local Preference、MED、Community 等属性来决定使用哪条路径。   
 
-![](image\112314.png)
+![](image/112314.png)
 
 举个例子：
 OSPF 选择路径 = 计算最短路径（链路代价最低）。

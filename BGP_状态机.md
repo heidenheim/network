@@ -7,5 +7,5 @@
 |OpenCongirm|参数, 能力特性协商成功, 自己发送keepalive包, 等待对方的keepalive包|
 |establish|已经收到对方的keepalive包, 双方能力特性经协商发现一致, 开始使用update通告路由信息|
 
-![](image\150603.png)
+![](image/150603.png)
 
