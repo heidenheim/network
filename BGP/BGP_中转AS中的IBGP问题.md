@@ -339,3 +339,70 @@ IBGP会话失效导致冗余失效
 1. **假设R3和R4之间的IBGP会话失效**(如配置错误), 由于R3忽略R2通告的R5路由, 因此R1访问R5就没有了冗余链路, 无法通过R3, R2进行转发 ???
 
 ##### 多集群设计
+
+![](image/240701.png)
+
+多集群设计不仅提供了针对链路失效的物理冗余, 同时提供了针对客户机与RR之间的IBGP会话失效的逻辑冗余
+
+如图: 在R2和R4划入Cluster1中, 将R3和R4划入CLuster4中. 
+
+此时在一个AS内部就有了两个Cluster簇
+
+当R3和R4之间的IBGP会话失效后, 因为是不同的簇ID, 所以R3仍会学习R2通告的R5路由. **所以R3任然可以继续转发数据流**
+
+## Cluster 配置
+
+1. 配置路由反射器及其客户端
+
+[Cisco-bgp] neighbor {group | ipv4-address} route-reflector-client
+
+缺省情况下, BGP未配置路由反射器及其客户.
+
+2. 配置路由反射器的集群ID
+
+[Cisco-bgp] bgp cluster-id cluster-id
+
+缺省情况下, 每个路由反射器使用自己的**Router ID**作为集群ID. 修改簇ID通常是i为了实现RR的冗余
+
+![](image/240702.png)
+
+- 所有设备lo0地址为10.0.x.x/32. 其中x为设备编号, 所有设备都使用lo0地址作为BGP RouterID.
+- R1, R2, R3 属于AS100, AS100内运行OSPF, 将所有直连接口都宣告进OSPF/
+- AS100内使用环回接口作为发送IBGP报文的源接口, R2作为路由反射器, R3为其客户端.
+- R4属于AS200, 与R3使用互联接口地址建立EBGP对等体, R4将192.168.1.1/32 宣告进BGP
+
+
+```
+R2(config-if)#router bgp 100
+R2(config-router)#bgp router-id 2.2.2.2
+R2(config-router)#neighbor 1.1.1.1 remote-as 100
+R2(config-router)#neighbor 1.1.1.1 update-source lo0
+
+R2(config-router)#neighbor 3.3.3.3 remote-as 100
+R2(config-router)#neighbor 3.3.3.3 update-source lo0
+R2(config-router)#neighbor 3.3.3.3 route-reflector-client
+```
+
+```
+R1#show ip bgp 192.168.1.1
+BGP routing table entry for 192.168.1.1/32, version 2
+Paths: (1 available, best #1, table default)
+Flag: 0x100
+  Not advertised to any peer
+  Refresh Epoch 1
+  200
+    34.1.1.4 (metric 30) from 2.2.2.2 (2.2.2.2)
+      Origin IGP, metric 0, localpref 100, valid, internal, best
+      Originator: 3.3.3.3, Cluster list: 2.2.2.2
+      rx pathid: 0, tx pathid: 0x0
+```
+
+详细信息中显示
+- 下一跳 34.1.1.4
+- 开销值 30
+- BGP邻居的更新源地址 2.2.2.2
+- 邻居的Router ID 2.2.2.2
+- 路由始发者的Router ID 3.3.3.3
+- Cluster list  默认为RR的Router ID
+
+路由反射器是一种结局的BGP路由黑洞的办法, 另一种为BGP联邦
