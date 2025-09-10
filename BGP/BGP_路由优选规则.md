@@ -246,3 +246,4 @@ offset-list R2L0 in 500
 7. 同为EBGP或IBGP路由
 8. AS Path 属性相同
 
+

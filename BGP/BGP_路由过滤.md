@@ -78,7 +78,7 @@ neighbor 12.1.1.1 route-map FILTER in
 
 - **如果设备希望值接收自己需要的路由**, 但对端设备又无法针对每个与它连接的设备维护不同的出口策略. 此时, 可以通过配置BGP基于前缀ORF (**Outbound Route Filter, 出口路由过滤器**) 来满足两端设备的需求
 
-![](image\BGP\280701.png)
+![](../image/BGP/280701.png)
 
 假设AS100更新有10000条路由前缀, AS200只需要其中100条, 多余的9900条就浪费了CPU, 带宽以及其他配置.
 
@@ -127,7 +127,7 @@ R1#show ip bgp neighbors 12.1.1.2 policy
   capability orf prefix-list receive
 ```
 
-**capability orf prefix-list receive** 配置了ORF监狱前缀能力接收
+**capability orf prefix-list receive** 配置了ORF基于前缀能力接收
 
 ```
 R1#show ip bgp neighbors 12.1.1.2 advertised-routes
@@ -146,3 +146,33 @@ RPKI validation codes: V valid, I invalid, N Not found
 Total number of prefixes 2
 ```
 
+## BGP 对等体组
+
+- 在BGP中, 很多邻居的更新策略相同(例如, 它们采用相同的过滤方法). 在Cisco IOS路由器上, 可将更新策略相同的邻居**划分到一个对等体组中, 以简化配置**
+- 更重要的是提高更新的效率和改善性能, BGP路由器的对等体众多时, 强烈建议采用这种方法/
+
+BGP动态对等体
+- 可以使用BGP侦听指定网段的BGP连接请求并动态建立BGP对等体, 减少网络维护的工作量-主要用于IBGP
+- BGP对等体组是一组采用相同更新策略的BGP邻居.
+- 可以定义对等体组, 将策略应用于对等体组, 并将各个邻居加入到对等体组中, 而不用分别给每个邻居定义相同的策略.
+
+与为每个邻居定义相同的策略相比, 使用对等体组的效率更高, 因为对于每个对等体, 更新只生成一次, 而不是为每个邻居路由器分别生成. 然而, 为对等体组的每个成员复制更新.
+
+
+```
+R1(config)#router bgp 100
+R1(config-router)#bgp router-id 1.1.1.1
+R1(config-router)#neighbor BGPGROUP peer-group
+R1(config-router)#neighbor BGPGROUP remote-as 100
+R1(config-router)#neighbor BGPGROUP update-source lo0
+R1(config-router)#neighbor BGPGROUP next-hop-self
+R1(config-router)#neighbor BGPGROUP password abc
+R1(config-router)#neighbor BGPGROUP route-reflector-client
+```
+
+```
+R2(config)#router bgp 100
+R2(config-router)#neighbor 1.1.1.1 password abc
+```
+
+在互相建立邻居要加入对等体组, 如果设置有密码必须要在对应的路由器上输入密码才能加入.
