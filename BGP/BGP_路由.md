@@ -1,4 +1,5 @@
 # BGP路由表
+
 ```
 R2#show ip bgp
 BGP table version is 3, local router ID is 2.2.2.2
@@ -15,11 +16,15 @@ RPKI validation codes: V valid, I invalid, N Not found
 R2#
 ```
 看到BGP table version is 3, BGP 路由表中路由更新的“内部版本号”，也就是说，这是 BGP 自己维护的“路由表变动次数”。
+
 - network 路由的目的网络地址以及网络掩码
 - nextHop 下一跳地址
 - 如果存在同个目的地多条路由, 则路由都将进行罗列, 但是每个目的地只有会有一条优选路由
-``` show ip bgp ipv4-address {mask | mask-length}```
+
+`show ip bgp ipv4-address {mask | mask-length}`
+
 查看BGP路由详细的详细展示
+
 ```
 R1#show ip bgp 22.22.22.22 255.255.255.255
 BGP routing table entry for 22.22.22.22/32, version 3
@@ -77,6 +82,7 @@ B        22.22.22.22 [200/0] via 2.2.2.2, 00:13:03
 
 
 BGP存在两种对等体关系: EBGP 和 IBGP
+
 1. EBGP(External BGP), 位于不同自治系统的BGP路由器之间的BGP对等体关系. 两台路由器之间需要建立EBGP对等体关系, 必须满足两个条件
   - 两个路由器所属AS不同(不同AS号)
   - 在配置EBGP时, Peer命令所指定的对等体IP地址要求路由可达, 并且TCP连接能够正确建立
@@ -101,7 +107,7 @@ BGP注入路由的方式又两种
 
 ## Network 注入路由
 
-![](image/170600.png)
+![](../image/BGP/170600.png)
 
 通过Network方式注入路由
 1. AS100内的BGP路由器已经通过IGP协议OSPF学习到了两条路由 '10.1.0.0/24' 和 '10.2.0.0/24', 在BGP进程内通过**network**命令注入这两条路由, 这两条路由将会出现在本地的BGP路由表中.

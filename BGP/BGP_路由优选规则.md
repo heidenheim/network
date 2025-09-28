@@ -17,7 +17,7 @@
 8. 优选Router ID (Originator ID) 最小的设备通告的路由
 9. 优选Cluster_List最短的路由
 
-![](image/270701.png)
+![](../image/BGP/240701.png)
 
 ```
 R1#show ip bgp
@@ -57,6 +57,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 ```
 
 ### 修改本地优先
+
 ```
 R1(config)#route-map LoP permit 10
 R1(config-route-map)#set local-preference 500
@@ -179,7 +180,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 
 ## 优选从EBGP对等体学来的路由
 
-![](image/BGP/280700.png)
+![](../image/BGP/280700.png)
 
 ```
 R1(config)#router bgp 200

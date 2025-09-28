@@ -1,6 +1,6 @@
 # BGP 联邦原理
 
-![](image/240703.png)
+![](../image/BGP/240703.png)
 
 BGP联邦 Confederation
 
@@ -88,7 +88,7 @@ Nexthop下一跳在**联邦EBGP邻居之间传递并不会发送改变**
 
 ### BGP联邦内的路径属性-Med
 
-![](image/240703.png)
+![](../image/BGP/240703.png)
 
 ```
 R5#show ip bgp 172.16.1.1
@@ -179,7 +179,7 @@ Paths: (1 available, best #1, table default)
 - 与 AS_CONFED_SEQUENCE 类似，但 AS_CONFED_SET 是无序的，用 方括号 [] 表示
 - 主要在联盟内部进行路由聚合时出现。
 
-![](image/270700.png)
+![](../image/BGP/270700.png)
 
 默认的联邦内AS-Path是 AS_Confed_Sequence 联邦有序, 使用小括号 () 表示
 

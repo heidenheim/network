@@ -33,11 +33,11 @@ BGP路径属性分为两大类, 一大类叫做**公认属性 well-know**, 一�
  - 该属性仅在本地有效. 当BGP路由表中存在到相同目的地的路由时, 将优先选择 Weight 值高的路由
  - Weight 值是思科BGP的**第一条选路规则
 
- ![](image/190600.png)
+![](../image/BGP/190600.png)
 
  在R1上部署路由策略(import策略), 将R2传递1.1.1.0/24的 weight 值设为300, 将R3传递的1.1.1.0/24的 weight 值设为200, 如此一来关于 1.1.1.0/24, R1肯定会优选R2传递的路由
 
- ![](image/190601.png)
+ ![](../image/BGP/190601.png)
 
  R2与R3都传递一条8.8.8.8的路由给R1, 各项数值都相同, weight为0, R1选取R2作为路劲
 
@@ -131,7 +131,7 @@ AS Path是一种**公认必遵**属性, 是前往目标网络的路由经过的A
 
 路由在被通告给EBGP对等体时, 路由器会在该路由的AS_Path中追加上本地的AS号之前, **路由被通告给IBGP对等体时, AS_Path不会发生改变.**
 
-![](image/080700.png)
+![](../image/BGP/080700.png)
 
 ```
 R5#show ip bgp
@@ -160,7 +160,7 @@ AS_Path 还有4种类型
 
 AS_Path无序和汇总有关
 
-![](image/080701.png)
+![](../image/BGP/080701.png)
 
 R3与R4 都宣告了11.11.11.11和111.111.111.111.
 ```
@@ -185,7 +185,7 @@ BGP默认是不会汇总的, 所以在R2中产生了4条BGP路由. 因为如果R
 
 ## AS_Path 防止环路
 
-![](image/080702.png)
+![](../image/BGP/080702.png)
 
 ```
 R1#show ip bgp
@@ -245,7 +245,8 @@ R1从R4收到的BGP路由更新中AS_Path属性值为 400, 300, 200, 100, R1检�
 其中也能看到有的是*AS_Seqence(有序)*和*AS_Set(无序)*, 默认类型为AS_Sequence, 如果经过手工汇总的路由, 则为AS_Set, 显示为大括号{}
 
 ### 汇总路由 Aggregation
-![](image/130700.png)
+
+![](../image/BGP/130700.png)
 
 ```
 R4#show ip bgp
@@ -316,7 +317,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 
 使用Route map修改BGP路由的AS_Path属性时, 可以追加新的AS(原有AS不可移除和覆盖). 一般情况不建议追加AS_Path, 二十追加原有AS_Path来实现控制EBGP选路
 
-![](image/130701.png)
+![](../image/BGP/130701.png)
 
 ```
 R3#show ip bgp
@@ -379,7 +380,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 - MED属性值**越小**则BGP路由越优
 - MED主要用于在AS之间影响BGP的选路. MED被传递给EBGP对等体后, 对等体在其AS内传递路由时, 携带该MED值, 但将路由**再次传递给其EBGP对等体时**, 缺省不会携带MED属性.
 
-![](image/130702.png)
+![](../image/BGP/130702.png)
 
 ## MED设置方法1
 
@@ -394,7 +395,7 @@ Route-map路由策略(手工修改)方式
 - 使用aggregate-address方式引入路由, 则**MED为空**, 如果传递IBGP邻居以0处理.
 - 使用aggregate-address方式引入路由, 如果传递给EBGP邻居要看是否本地始发, 本地始发, 传递当0处理, 非本地始发为空处理.
 
-![](image/140700.png)
+![](../image/BGP/140700.png)
 
 在R2重分布直连路由时增加命令metric
 
@@ -462,7 +463,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 
 # Atomic_Aggregate(公认任意) and Aggregator(可选过渡)
 
-![](image/140701.png)
+![](../image/BGP/140701.png)
 
 在R3上使用命令聚合路由
 ```
@@ -555,7 +556,7 @@ BGP路由器将本地始发路由发布给IBGP对等体时, 会把该路由信�
 
 ## Community技术背景
 
-![](image/140702.png)
+![](../image/BGP/140702.png)
 
 AS 200内有大量的路由被引入BGP, 这些路由分别用于生产以及办公网络, 现在AS100的BGP路由器需要分别针对这些路由执行不同的策略, 如果使用ACL, IP Prefix-list这样的工具, 效率就非常地下了
 
@@ -577,7 +578,7 @@ Community属性值长度为32bit, 也就是4Byte. 可以使用两种形式呈现
 - AA: NN格式, 其中AA表示AS号, NN是自定义的编号. 团体属性需要配置 route-map 才可以给路由增加上
 - *团体(Community)* 属性分为自定义团体属性和公认团体属性以及扩展团体属性
 
-![](image/140702.png)
+![](../image/BGP/140702.png)
 
 ```
 R1(config)#ip prefix-list COML permit 8.8.0.0/16 ge 24

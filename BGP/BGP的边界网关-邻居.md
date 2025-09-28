@@ -7,7 +7,9 @@ BGP通常被称为路径矢量路由协议(Path-Vector Routing Protocol)
 - AS号
 - 下一跳
 - NLRI (Next Layer Reachable Information) 简单来说就是路由,类似于OSPF的LSA
-![](image/432718.png)
+
+![](../image/BGP/432718.png)
+
 ```
 R2#show ip bgp summary
 BGP router identifier 2.2.2.2, local AS number 200
@@ -16,8 +18,11 @@ BGP table version is 1, main routing table version 1
 Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 23.1.1.3        4          300      26      27        1    0    0 00:20:22        0
 ```
+
 在 BGP summary 中可以看到邻居地址, AS号, 路由.
+
 这时候R2和R3可以作为各自的边界网关, 把需要的路由宣告进BGP中.
+
 ```R2(config)#router bgp 200
 R2(config-router)#network 1.1.1.1 mask 255.255.255.255
 ```
@@ -41,6 +46,7 @@ Packet sent with a source address of 1.1.1.1
 !!!!!
 Success rate is 100 percent (5/5), round-trip min/avg/max = 1/3/15 ms
 ```
+
 ping对方时要带上源头lo0, 因为BGP路由表里只有1.1.1.1和4.4.4.4, 没有12.1.1.1和34.1.1.4, BGP里没有这两个地址的回程路由.
 
 

@@ -1,12 +1,15 @@
 **BGP（Border Gatway Protocol**是一种外部网关协议（External Gatway Protocol），由此可以知道网关协议可以分为外部网关协议（EGP）和内部网关协议（Internal Gatway Protocol），被人熟知的内部网关协议（IGP）有OSPF，EIGRP。
 
 为什么要有EGP
-OSPF，EIGRP等IGP路由协议在组织机构网络内部广泛应用，随着网络规模的扩大网络中路由数量的增长，IGB没办法管理大规模的网络，所以诞生了Autonomous System 自治系统。
-AS指的是在同一个组织管理下，使用统一路由策略的设备集合。
-不同的AS域通过不同的AS号区分。AS号分为16 bit和32 bit两种，IANA负责分发AS号。
+
+- OSPF，EIGRP等IGP路由协议在组织机构网络内部广泛应用，随着网络规模的扩大网络中路由数量的增长，IGB没办法管理大规模的网络，所以诞生了Autonomous System 自治系统。
+- AS指的是在同一个组织管理下，使用统一路由策略的设备集合。
+- 不同的AS域通过不同的AS号区分。AS号分为16 bit和32 bit两种，IANA负责分发AS号。
 
 在不同AS域之间就要使用EGP来通信，BGP就是如今使用的最多的EGP协议。
+
 相较传统的IGP协议：
+
 1. BGP基于TCP179，只要能够建立TCP连接即可建立BGP；
 - (传统 IGP（如 OSPF、EIGRP)使用 IP 直接封装报文，通常需要自己处理可靠性(如 OSPF 需要 LS Acknowledgment).
 -  BGP 使用 TCP 端口 179 作为传输层协议，只要 TCP 连接成功，BGP 就可以稳定地建立邻居关系，不需要额外的报文确认机制。
@@ -36,24 +39,32 @@ AS指的是在同一个组织管理下，使用统一路由策略的设备集合
 </br>
 
 5. BGP 不计算最短路径，而是使用策略（Path Selection）选择最佳路径：
-- 例如基于 AS-PATH、Local Preference、MED、Community 等属性来决定使用哪		条路径。
+- 例如基于 AS-PATH、Local Preference、MED、Community 等属性来决定使用哪条路径。
+
 举个例子：
 - OSPF 选择路径 = 计算最短路径（链路代价最低）。
 - BGP 选择路径 = 看哪条路径的 AS-PATH 更短，或者哪条路径的 Local Preference 更高。
 
-![](image\112314.png)
+![](../image/BGP/112314.png)
 
 AS之间需要直接链路，或通过VPN协议构造逻辑直连（GRE Tunnel）进行邻居建立。
+
 AS之间可能是不同的机构、公司，相互间无法完全信任，使用IGP可能存在暴露AS内部的网络信息。
+
 整个网络扩大，路由器数量庞大，路由表规模太大，路由收敛变慢，设备性能销号太大。
+
 为此在AS之间使用BGP进行路由传递。
 
 IANA（Internet Assigned Number Authority 因特网地址分配组织）IAB（Internet Architecture Board 因特网体系委员会）的下设组织。IANA授权NIC（Network information Center 网络信息中心）和其他组织负责IP地址和域名分配，同时IANA负责维护TCP/IP协议族所采用的协议标识符数据库，包括AS自治系统号。
 
 长度16 bit的AS表示为 1-65535，其中64512-65535为私有AS号，0不可使用
+
 长度 32 bit的AS表示为 1-4294967294，其中 4200000000-4294967294为私有AS，0不可用。
+
 AS号 1 – 65535 = 2^16，0不能用
+
 64512 – 65535为私网AS号，一共1024个
+
 一般用不到32bit的AS号，用16bit的AS
 
 ## BGP发展
@@ -63,6 +74,7 @@ AS号 1 – 65535 = 2^16，0不能用
 BGP是一种实现AS之间的路由可达，并选择最佳路由（优选）的矢量路由协议。
 
 特点
+
 - BGP使用TCP作为其传输层协议（port 179），使用触发式路由更新，而不是周期性路由更新。
 - 路由器之间会话基于TCP连接而建立
 - BGP能够承载大批量的路由协议信息，能够支撑大规模网络。
@@ -71,26 +83,35 @@ BGP是一种实现AS之间的路由可达，并选择最佳路由（优选）的
 - BGP提供了路由聚合和路由衰减功能用于防止路由震荡，通过这两项功能有效地提高了网络稳定性。
 	
 运行BGP的路由器称为**BGP speaker**，或**BGP路由器**
+
 两个建立BGP会话对策路由器互为等体（Peer），BGP对等体之间交换BGP路由表。
+
 BGP路由器只发送增量的BGP路由更新，或进行触发式更新（不会周期性更新）。
+
 BGP能够承载大批量的路由前缀，可在大规模网络中应用。
 
 ## BGP安全性
+
 常见BGP攻击主要有两种
+
 - 建立非法BGP邻居关系，通过非法路条目，干扰正常路由表
 - 发送大量非法BGP报文，路由收到上送CPU，导致CPU利用率升高
 
 ## BGP认证
+
 BGP使用认证和GTSM（Generalized TTL Security Mechanism 通过TTL 安全保护机制）两个方法保证BGP对等体间的交互安全。
 
 BGP认证分为MD5认证和Keychain认证，对BGP对等体关系进行认证可以预防非法BGP邻居建立。
-![](image\144319.png)
+
+![](../image/144319.png)
 
 其中Keychain是华为的技术。
+
 BGP认证需要硬重置才可以使密码生效，如果BGP会话先行建立再去设置密码就没有意义了。
 
 ## BGP的GTSM
 BGP的GTSM功能检测IP报文头部中的TTL（Time-to-live）值是否存在一个预先设置好的特定范围内，并对不符合TTL值范围的报文进行丢弃，这样就避免了网络攻击者模拟“合法”BGP报文攻击设备。
+
 *要求 BGP 邻居之间发送的 IP 包 TTL 值必须为 255，接收方只接受 TTL 值为 255 的数据包。因为同一个子网内的直接邻居在发送数据包时 TTL 是 255，如果是远端伪造者伪装成邻居发起攻击，TTL 必然会在经过路由器转发时减少，从而低于 255，被 GTSM 拦截。*
 
 ```
@@ -109,9 +130,11 @@ ttl-security hops N 意味着允许 TTL 值在 [256-N, 255] 范围内的数据�
 
 ## 跨设备建立邻居
 BGP除了可以像其他网络协议一样能够和直连的设备建立邻居意外，还可以跨设备指定邻居，当然必要前提是要有能到达该设备的路由。
-![](image/12317.png)
+
+![](../image/BGP/12317.png)
 
 首先在路由器上写上静态路由到达1.1.1.1 和3.3.3.3
+
 ```
 R1(config)#ip route 3.3.3.3 255.255.255.255 12.1.1.2
 R2(config)#ip route 1.1.1.1 255.255.255.255 12.1.1.1
@@ -120,6 +143,7 @@ R3(config)#ip route 1.1.1.1 255.255.255.255 23.1.1.2
 ```
 
 配置R1:
+
 ```
 R1(config)#router bgp 100
 R1(config-router)#bgp router-id 1.1.1.1
@@ -130,6 +154,7 @@ R1(config-router)#neighbor 3.3.3.3 update-source loopback 0
 ```
 
 配置R3:
+
 ```
 R3(config)#router bgp 200
 R3(config-router)#bgp router-id 3.3.3.3
@@ -150,8 +175,8 @@ Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State
 ```
 BGP跨设备邻居建立成功 neighbor x.x.x.x ebgp-multihop x //意义为允许x跳之内的EBGP建立邻居连接. 默认情况下EBGP的邻居必须是直连, BGP对TTL要求严格.
 
+![](../image/16854.png)
 
-![](image/16854.png)
 ```
 R1(config-if)#router ospf 110
 R1(config-router)#router-id 1.1.1.1
@@ -175,10 +200,13 @@ R3(config-router)#neighbor 23.1.1.2 remote-as 10000
 *Jun  9 10:56:29.357: %BGP-5-ADJCHANGE: neighbor 23.1.1.2 Up //邻居建立成功
 
 ```
+
 使用命令 show ip bpg summary, 可以看到 State/PfxRcd 的值为0 说明现在BGP并没有传递任何路由
+
 使用命令 show ip bgp 也为空
 
-```R3(config)#router eigrp 90
+```
+R3(config)#router eigrp 90
 R3(config-router)#eigrp router-id 3.3.3.3
 R3(config-router)#network 34.1.1.3 0.0.0.0
 ```
@@ -189,6 +217,7 @@ R4(config-router)#eigrp router-id 4.4.4.4
 R4(config-router)#network 34.1.1.4 0.0.0.0
 R4(config-router)#network 4.4.4.4 0.0.0.0
 ```
+
 现在环境搭建完毕. 现在来**在BGP宣告路由**.
 
 ```
@@ -202,6 +231,7 @@ R3(config-router)#network 4.4.4.4 mask 255.255.255.255
 ```
 
 这个时候 show ip bgp 就能看到我们宣告进去的路由了
+
 ```
 R2#show ip bgp
 BGP table version is 3, local router ID is 2.2.2.2
@@ -218,9 +248,11 @@ RPKI validation codes: V valid, I invalid, N Not found
 ```
 
 ‘*’ 表示可用路由
+
 ‘>’ 表示最优路由
 
 在show ip bgp summary 中
+
 ```
 R3#show ip bgp summary
 BGP router identifier 3.3.3.3, local AS number 20000
@@ -244,6 +276,7 @@ State/PfxRcd 已经有路由了
 
 所以作为解决办法就是把R2和R3当作R1和R4的出口路由器, R1和R4使用默认路由来访问外部网络.
 ```
+
 R2(config-router)#redistribute ?
   application     Application
   bgp             Border Gateway Protocol (BGP)
@@ -261,12 +294,12 @@ R2(config-router)#redistribute ?
   static          Static routes
   vrf             Specify a source VRF
 ```
+
 当然在redistribute 中有bgp的选项,但是正常情况下是不会这么做的.
 
 可以写默认路由也可以写明细路由
-```
-R1(config)#ip route 4.4.4.4 255.255.255.255 12.1.1.2
-```
+
+`R1(config)#ip route 4.4.4.4 255.255.255.255 12.1.1.2`
 
 ```
 R4(config)#ip route 1.1.1.1 255.255.255.255 34.1.1.3

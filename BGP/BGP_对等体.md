@@ -2,17 +2,19 @@
 与OSPF、EIGRP等协议不同，BGP的会话是基于TCP建立的，建立BGP对等体系关系的的两台路由器并不要求必须直连。
 
 BGP存在两种对等体系类型：EBGP和IBGP：
+
 - EBGP（External BGP）：位于不同自制体系的BGP路由器之间的BGP的对等体关系。两台	路由器之间要建立EBGP对等体关系，必须满足两个要求：
-1. 两个路由器所属AS不同（即AS号不同）
-2. 配置EBGP时，Peer命令所指定的对等体IP地址要求路由可达，并且TCP直连能够正确建立.
+    1. 两个路由器所属AS不同（即AS号不同）
+    2. 配置EBGP时，Peer命令所指定的对等体IP地址要求路由可达，并且TCP直连能够正确建立.
 
 - IBGP （Internal BGP）：位于相同自治系统的BGP之间的BGP邻居关系。
 
 简单说如果两个AS号不同就是EBGP，相同就是IBGP。只要路由可达就意味着TCP179可以连接就能跨设备建立邻居，但是通过默认路由是不行的。
 
-![](image/45465.png)
+![](../image/BGP/45465.png)
 
 BGP虽然能跨设备建立邻居关系,但是默认严格执行TTL, 如果没有手工指定默认必须直连(一跳)才能成功建立邻居.
+
 ```
 R1(config)#ip route 3.3.3.3 255.255.255.255 12.1.1.2
 // 不建议写默认路由, 最好使用静态路由, 不然到时候建不起邻居, 但是又ping的通, 查错查的脑壳疼. debug ip tcp transactions, debug ip bgp
@@ -28,6 +30,7 @@ R3(config-router)#bgp router-id 3.3.3.3
 R3(config-router)#neighbor 1.1.1.1 remote-as 100
 R3(config-router)#neighbor 1.1.1.1 update-source lo0
 ```
+
 现在把环境搭建好以后R1和R3是可以互通的, 但是bgp的邻居关系虽然已经制定了, 但是依旧是建立不起来的, 因为BGP默认严格执行TTL, 默认需要直连才能建立邻居.
 
 ```
@@ -44,20 +47,26 @@ BGP table version is 1, main routing table version 1
 Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 1.1.1.1         4          100       0       0        1    0    0 never    Idle
 ```
+
 在R1和R3的BGP里, 手工指定允许接受最大两跳的邻居.
+
 ```
 R1(config-router)#neighbor 3.3.3.3 ebgp-multihop 2
 R3(config-router)#neighbor 1.1.1.1 ebgp-multihop 2
 ```
 
 有时候建立连接会比较慢
+
 这种时候可以软重置一下bgp或者检查一下tcp 179的连接
+
 ```
 R1#clear ip bgp * soft
 
 R3#telnet 1.1.1.1 179 /source-interface loopback 0
 ```
+
 现在BGP的邻居已经成功建立了.
+
 ```
 R1#show ip bgp summary
 BGP router identifier 1.1.1.1, local AS number 100
@@ -68,6 +77,7 @@ Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State
 ```
 
 ## 维护BGP
+
 BGP不会周期性跟新路由, 仅在需要的时候更新, 由于公网的路由可能的动荡, 因此触发更新也会有一定的等待时间, IBGP peer为 5秒, EBGP peer为30秒, 而在这段时间内, BGP仍然可以进行路由信息的搜集, 所以BGP收敛会比较慢.
 
 如果配置了关于BGP的路由策略, 生效方式有两种--**硬重置**和**软重置**
@@ -97,16 +107,22 @@ BGP不会周期性跟新路由, 仅在需要的时候更新, 由于公网的路�
 4. 作为实验练习或者对等结构清晰可控
 
 这些时候建议使用环回接口建立邻居.在普通场景下，EBGP 建议使用物理接口地址建立邻居（更简单、更直观）；
+
 只有在多跳、逻辑隧道或特定设计需求下，才使用环回接口建 EBGP 邻居，并需要额外配置。
 
 在IBGP里就没有EBGP这么麻烦只要AS号相同就可以直接建立邻居，但是不能直接跨设备建立邻居。建立IBGP邻居尽量使用环回接口，因为环回接口稳定
 
 TCP更新源地址
 缺省情况下，BGP使用报文出接口作为TCP连接的本地接口。
+
 在部署IBGP对等体关系时，建议使用Loopback地址作为更新源地址。Loopback接口非常稳定，而且可以借助AS内的IBGP和冗余拓扑来保证可靠性。
+
 如果更新源地址错误，将影响IBGP的邻居关系建立。
+
 在部署EBGP对等体关系时，通常使用直连接口的ip地址作为源地址，如果使用Loopback接口建立EBGP对等体关系，则应注意更新源地址和EBGP多跳问题。
+
 需要注意，用于建立BGP对等体的源地址，不可以再network宣告进BGP。否则会带来BGP邻居关系的震荡（华为则直接不传递）
+
 bgp用环回接口建立邻居关系的额外规则
 1. 静态路由
 2. ip源头
@@ -153,7 +169,7 @@ router bgp 100
 # TCP更新源地址
 - 一般而言在AS内部, 网络具备一定的冗余性. 在R1与R3之间, 如果采用直连接口建立IBGP邻居关系, 那么一旦接口或者直连链路发生故障, BGP会话也就中断了, 但事实上,由于冗余链路的存在, R1与R3之间的IP连通性其实并没有中断(仍然可以通过R4到达彼此)
 
-![](image\150600.png)
+![](../image/BGP/150600.png)
 
 1. 缺省情况下, BGP使用报文出接口作为TCP连接的本地端口.
 2. 在部署IBGP对等体关系时, 建议使用Loopback地址作为更新源地址. Loopback接口非常稳定, 而且可以借助AS内的IGP和冗余拓扑来保证可靠性.
@@ -162,7 +178,7 @@ router bgp 100
 
 *** 需要注意, 用于建立BGP对等体的源地址, 不可再network宣告进BGP. 否则会带来BGP邻居关系震荡 ***
 
-![](image\150601.png)
+![](../image/BGP150601.png)
 
 ```
 R2#show ip bgp summary
@@ -195,6 +211,7 @@ RPKI validation codes: V valid, I invalid, N Not found
      Network          Next Hop            Metric LocPrf Weight Path
  r>i  1.1.1.1/32       1.1.1.1                  0    100      0 i
 ```
+
 可以看看到在BGP路由1.1.1.1前面有个'r', 说明RIB-failure，路由未被安装进全局路由表（RIB），原因可能是有更优的同前缀路由（如静态路由、OSPF 路由等）已存在。BGP 学到此路由但未被使用转发。
 
 OSPF和EIGRP都有5种报文, BGP报文有:
