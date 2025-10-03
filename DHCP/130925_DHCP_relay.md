@@ -4,7 +4,7 @@
 
 这个时候设备就需要使用DHCP终极代理来获取IP地址。
 
-现在因为DHCP服务器和DHCP客户端不在同一个广播域，虽然客户端发送的第一条报文是依靠广播的discovery，但是服务器还是收不到后续也不能给客户端提供服务。
+现在因为DHCP服务器和DHCP客户端不在同一个广播域，虽然客户端发送的第一条报文是依靠广播的 discovery，但是服务器还是收不到后续也不能给客户端提供服务。
 
 这个时候就需要将客户端广播报文转发给DHCP服务器并将DHCP服务器的报文转发给客户端，这样才能完成后续所有工作。
 
@@ -43,18 +43,20 @@ SW1(config-if)#no shu
 SW1(config)#vlan 10
 SW1(config-vlan)#name USER
 
-SW1(config)#vlan 20
-SW1(config-vlan)#name OFFICE
-
 SW1(config)#int vlan 10
 SW1(config-if)#ip add 192.168.10.254 255.255.255.0
 SW1(config-if)#no shu
 SW1(config-if)#ip helper-address 192.168.1.100
+// 核心命令
+
+SW1(config)#vlan 20
+SW1(config-vlan)#name OFFICE
 
 SW1(config)#int vlan 20
 SW1(config-if)#ip address 192.168.20.254 255.255.255.0
 SW1(config-if)#no shu
 SW1(config-if)#ip helper-address 192.168.1.100
+// 核心命令
 
 SW1(config)#int e0/1
 SW1(config-if)#switchport mode access
@@ -76,3 +78,9 @@ IP address      Client-ID/              Lease expiration        Type       State
 192.168.10.2     0100.5079.6668.01       Sep 30 2025 03:04 PM    Automatic  Active     Ethernet0/0
 192.168.20.1     0100.5079.6668.02       Sep 30 2025 03:07 PM    Automatic  Active     Ethernet0/0
 ```
+
+##### 总结
+
+1. DHCP 中继就是在 DHCP Server 上多加一条手工静态路由, 能让 DCHP Server 成功下发地址.
+2. 在客户端网关(如 VLAN 中)接口上启用 `ip helper-address X.X.X.X` 命令
+3. 检查命令 `show ip helper-address` 
