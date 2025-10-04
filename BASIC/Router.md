@@ -127,7 +127,7 @@ crypto (VPN) 、cts (TrustSec)、ips (入侵防御)、logging、archive、webvpn
 | **ip route**                   | 配置静态路由                  | `Router(config)# ip route 0.0.0.0 0.0.0.0 192.168.1.254`                      | ✅     | ✅           |
 | **router ospf**                | 启用 OSPF                 | `Router(config)# router ospf 1`                                               | ✅     | ❌           |
 | **router eigrp**               | 启用 EIGRP                | `Router(config)# router eigrp 100`                                            | ✅     | ❌           |
-| **BGP**                 | 启用 BGP                  | `Router(config)# router bgp 65001`                                            | ✅     | ❌           |
+| **router bgp**                 | 启用 BGP                  | `Router(config)# router bgp 65001`                                            | ✅     | ❌           |
 | **mpls**                       | 配置 MPLS                 | `Router(config)# mpls ip`                                                     | ✅     | ❌           |
 | **vrf**                        | VRF 配置 (多 VPN 支持)       | `Router(config)# ip vrf CUST1`                                                | ✅     | ✅           |
 | **spanning-tree**              | 全局生成树配置                 | `Router(config)# spanning-tree mode rapid-pvst`                               | ✅     | ❌           |
