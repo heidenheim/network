@@ -90,7 +90,7 @@
 ![alt text](../../image/Security/IPSec/09102503.png)
 
 
-**R1**
+**R2**
 
 ```
 R2(config)#interface tunnel 0
@@ -169,6 +169,8 @@ R4(config-router)#no passive-interface tunnel 0
 
 ### Hub(R2) - Tunnel 与 NHRP
 
+
+NHRP(Next Hop Resolution Protocol) 下一跳解析协议
 
 - 接口与模式
     1. `interface tunnel 0`：创建一条"覆盖网"隧道接口. 
