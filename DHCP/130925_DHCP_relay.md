@@ -13,6 +13,7 @@
 ## DHCP Server
 
 ```
+DHCP_Server(config)#int e0/0
 DHCP_Server(config-if)#ip address 192.168.1.100 255.255.255.0
 DHCP_Server(config-if)#no shu
 
